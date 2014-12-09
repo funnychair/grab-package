@@ -82,7 +82,6 @@ void SessionSet::reflashSession(const struct pcap_pkthdr *header, const u_char *
     se_it->end.tv_sec = header->ts.tv_sec;
     se_it->end.tv_usec = header->ts.tv_usec;
     se_it->p_number++;
-
 }
 void SessionSet::addSession(const struct pcap_pkthdr *header, const u_char *packet)
 {
@@ -118,11 +117,14 @@ void SessionSet::addSession(const struct pcap_pkthdr *header, const u_char *pack
 }
 void SessionSet::labelSession(vector<alert>& alerts)
 {
+    //for all sessions
     for(unsigned long sessionIndex=0; sessionIndex<_sessions.size(); sessionIndex++)
     {
+        //if(alerts.empty())break;
+        //for all alert.
         for(unsigned long alertIndex=0; alertIndex<alerts.size(); alertIndex++)
         {
-            if(_sessions[sessionIndex].end.tv_sec > alerts[alertIndex].arrival.tv_sec);
+            if(_sessions[sessionIndex].end.tv_sec>alerts[alertIndex].arrival.tv_sec);
             else if(_sessions[sessionIndex].end.tv_sec < alerts[alertIndex].arrival.tv_sec)break;
             else 
             {
@@ -130,6 +132,8 @@ void SessionSet::labelSession(vector<alert>& alerts)
                 else if(_sessions[sessionIndex].end.tv_usec < alerts[alertIndex].arrival.tv_usec)break;
             }
             _sessions[sessionIndex].label = alerts[alertIndex].label;
+            alerts.erase(alerts.begin()+alertIndex);
+            //cout << alerts[alertIndex].label << endl;
         }
     }
 }
@@ -143,4 +147,5 @@ void SessionSet::outputSession(string path)
         se_it->printSession();
         file << se_it->outputSession();
     }
+    cout << "session number is " << _sessions.size() << endl;
 }

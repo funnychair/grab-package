@@ -70,7 +70,7 @@ void AlertSet::snortResolve(ifstream &file)
         getline(file, alertContent);
     }
 }
-vector<alert>* AlertSet::getAlert()
+vector<alert> AlertSet::getAlert()
 {
-    return &_alert;
+    return _alert;
 }

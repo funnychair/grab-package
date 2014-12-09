@@ -15,7 +15,7 @@ class AlertSet
 public:
     AlertSet(string path);
     ~AlertSet();
-    vector<alert>* getAlert();
+    vector<alert> getAlert();
 
 private:
     vector<alert> _alert;

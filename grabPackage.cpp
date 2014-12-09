@@ -69,11 +69,12 @@ int main(int argc, char *argv[])
     //pcapDev();
     
     class AlertSet snortAlert(snortAlertPath);
-    vector<alert>* alertPtr = snortAlert.getAlert();
-    for(int i=0; i<alertPtr->size(); i++)
+    vector<alert> alertV = snortAlert.getAlert();
+    for(int i=0; i<alertV.size(); i++)
     {
-        cout << (alertPtr)->at(i).label << endl;
+        cout << (alertV).at(i).label << endl;
     }
+    mainSession.labelSession(alertV);
     mainSession.outputSession(finalDataPath);
     return 0;
 }
