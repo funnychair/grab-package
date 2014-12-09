@@ -21,9 +21,9 @@ SessionSet::~SessionSet(){}
 
 void SessionSet::addPacket(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
 {
-    _ethernet = (const class sniff_ethernet*)(packet);
-    _ip = (const class sniff_ip*)(packet + SIZE_ETHERNET);
-    _tcp = (const class sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
+    _ethernet = (const struct sniff_ethernet*)(packet);
+    _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
 
     bool newflag = true;
     //search session of the packet.
@@ -84,9 +84,10 @@ void SessionSet::reflashSession(const struct pcap_pkthdr *header, const u_char *
 }
 void SessionSet::addSession(const struct pcap_pkthdr *header, const u_char *packet)
 {
-    _ethernet = (const class sniff_ethernet*)(packet);
-    _ip = (const class sniff_ip*)(packet + SIZE_ETHERNET);
-    _tcp = (const class sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
+    _ethernet = (const struct sniff_ethernet*)(packet);
+    _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
+    //if()
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
     //cout << "addSession.\n" << endl;
     struct session newSession;
     newSession.start.tv_sec = header->ts.tv_sec;

@@ -23,9 +23,9 @@ public:
 private:
     unsigned int _timeout;
     vector<session> _sessions;
-    const class sniff_ethernet *_ethernet;
-    const class  sniff_ip *_ip;
-    const class sniff_tcp *_tcp;
+    const struct sniff_ethernet *_ethernet;
+    const struct  sniff_ip *_ip;
+    const struct sniff_tcp *_tcp;
     const char *_payload;
     void reflashSession(const struct pcap_pkthdr *header, const u_char *packet,
             vector<session>::iterator se_it);

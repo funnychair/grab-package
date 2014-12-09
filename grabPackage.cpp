@@ -155,17 +155,20 @@ void pcapDev()
 }
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-    ethernet = (class sniff_ethernet*)(packet);
-    ip = (class sniff_ip*)(packet + SIZE_ETHERNET);
-    size_ip = IP_HL(ip)*4;
-    if (size_ip < 20 || IP_V(ip)==6) {
-        printf("   * Invalid IP header length: %u bytes\n", size_ip);
-        cout << "ip size "<<size_ip <<endl;
-        cout << "version "<<IP_V(ip)<<endl;
+    ethernet = (struct sniff_ethernet*)(packet);
+    if(ethernet->ether_type==0x0800)
+    {
+        ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
+        size_ip = IP_HL(ip)*4;
+        if (size_ip < 20 || IP_V(ip)==6) {
+            printf("   * Invalid IP header length: %u bytes\n", size_ip);
+            cout << "ip size "<<size_ip <<endl;
+            cout << "version "<<IP_V(ip)<<endl;
+            return;
+        }
+        mainSession.addPacket(args, header, packet);
         return;
     }
-    mainSession.addPacket(args, header, packet);
-    return;
 }
 void old_got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {

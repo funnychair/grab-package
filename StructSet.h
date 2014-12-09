@@ -50,7 +50,7 @@ struct alert
     string label;
 };
 
-class sniff_ethernet
+struct sniff_ethernet
 {
 public:
     u_char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
@@ -58,7 +58,7 @@ public:
     u_short ether_type; /* IP? ARP? RARP? etc */
 };
 
-class sniff_ip
+struct sniff_ip
 {
 public:
     u_char ip_vhl;      /* version << 4 | header length >> 2 */
@@ -78,7 +78,7 @@ public:
 
 typedef u_int tcp_seq;
 
-class sniff_tcp
+struct sniff_tcp
 {
 public:
     u_short th_sport;   /* source port */
@@ -100,5 +100,19 @@ public:
     u_short th_win;     /* window */
     u_short th_sum;     /* checksum */
     u_short th_urp;     /* urgent pointer */
+};
+struct sniff_udp
+{
+public:
+    u_short th_sport;
+    u_short th_dport;
+    u_short th_len;
+    u_short th_sum;
+};
+struct sniff_icmp
+{
+    u_char th_type;
+    u_char th_type_code;
+    u_short th_sum;
 };
 #endif
