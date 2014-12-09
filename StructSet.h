@@ -19,7 +19,7 @@ struct session
     u_short port_src,port_dst;
 
     long dur = 0;
-    string  potocol = "other";
+    string  protocol;
     unsigned int p_number = 1;
     
     //TODO: add feature.
@@ -28,16 +28,22 @@ struct session
 
 
     string label = "normal.";
+    session(struct timeval time, struct in_addr sip, struct in_addr dip)
+    {
+        start = end = time;
+        ip_src = sip;
+        ip_dst = dip;
+    }
     void printSession()
     {
         cout << "time=" << start.tv_sec << "--" << end.tv_sec;
-        cout << " from=" << ip_src.s_addr << inet_ntoa(ip_src) << ":" << port_src;
-        cout << " to=" << ip_dst.s_addr << inet_ntoa(ip_dst) << ":" << port_dst << endl;
+        cout << " from=" << setw(16) << inet_ntoa(ip_src) << ":" << setw(6) << port_src;
+        cout << " to=" <<setw(16) << inet_ntoa(ip_dst) << ":" << setw(6) << port_dst << endl;
     }
     string outputSession()
     {
         std::stringstream ss;
-        ss << this->end.tv_sec-this->start.tv_sec << ',' << port_src << ',' << port_dst << ',' << potocol << ',' << p_number << ',' << label << '\n';
+        ss << this->end.tv_sec-this->start.tv_sec << ',' << port_src << ',' << port_dst << ',' << protocol << ',' << p_number << ',' << label << '\n';
         return ss.str();
     }
 };

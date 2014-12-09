@@ -24,7 +24,9 @@ void SessionSet::addPacket(unsigned char *args, const struct pcap_pkthdr *header
     _ethernet = (const struct sniff_ethernet*)(packet);
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
     _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
-
+    u_short sport = _tcp->th_sport;
+    u_short dport = _tcp->th_dport;
+    if(_ip->ip_p==0x01)sport = dport = 0;
     bool newflag = true;
     //search session of the packet.
     vector<session>::iterator se_it;
@@ -39,21 +41,21 @@ void SessionSet::addPacket(unsigned char *args, const struct pcap_pkthdr *header
                 (
                     (_ip->ip_src.s_addr==se_it->ip_src.s_addr)
                     &&
-                    (_tcp->th_sport==se_it->port_src)
+                    (sport==se_it->port_src)
                     &&
                     (_ip->ip_dst.s_addr==se_it->ip_dst.s_addr)
                     &&
-                    (_tcp->th_dport==se_it->port_dst)
+                    (dport==se_it->port_dst)
                 )
                 ||
                 (
                     (_ip->ip_src.s_addr==se_it->ip_dst.s_addr)
                     &&
-                    (_tcp->th_sport==se_it->port_dst)
+                    (sport==se_it->port_dst)
                     &&
                     (_ip->ip_dst.s_addr==se_it->ip_src.s_addr)
                     &&
-                    (_tcp->th_dport==se_it->port_src)
+                    (dport==se_it->port_src)
                 )
             )
             {
@@ -86,21 +88,32 @@ void SessionSet::addSession(const struct pcap_pkthdr *header, const u_char *pack
 {
     _ethernet = (const struct sniff_ethernet*)(packet);
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
-    //if()
-    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
-    //cout << "addSession.\n" << endl;
-    struct session newSession;
-    newSession.start.tv_sec = header->ts.tv_sec;
-    newSession.start.tv_usec = header->ts.tv_usec;
-    newSession.end.tv_sec = header->ts.tv_sec;
-    newSession.end.tv_usec = header->ts.tv_usec;
-    newSession.ip_src = _ip->ip_src;
-    newSession.ip_dst = _ip->ip_dst;
-    //cout << inet_ntoa(_ip->ip_src) << "  ";
-    //cout << inet_ntoa(_ip->ip_dst) << endl;
-    newSession.port_src = _tcp->th_sport;
-    newSession.port_dst = _tcp->th_dport;
-    //newSession.printSession();
+    //assume packet is tcp to get the sport and dport for build the inint value.
+    struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
+    if(_ip->ip_p==0x06)
+    {
+        _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+        newSession.port_src = _tcp->th_sport;
+        newSession.port_dst = _tcp->th_dport;
+        newSession.protocol = "tcp";
+        //TODO:add the function to detect features for tcp protocol.
+    }
+    else if(_ip->ip_p==0x11)
+    {
+        _udp = (const struct sniff_udp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+        newSession.port_src = _udp->th_sport;
+        newSession.port_dst = _udp->th_dport;
+        newSession.protocol = "udp";
+        //TODO:add the function to detect features for udp protocol.
+    }
+    else if(_ip->ip_p==0x01)
+    {
+        _icmp = (const struct sniff_icmp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+        newSession.port_src = 0;
+        newSession.port_dst = 0;
+        newSession.protocol = "icmp";
+        //TODO:add the function to detect features for icmp protocol.
+    }
     _sessions.push_back(newSession);
 }
 void SessionSet::labelSession(vector<alert>& alerts)
@@ -125,9 +138,9 @@ void SessionSet::outputSession(string path)
     ofstream file;
     file.open(path.c_str(),ios::out);
     vector<session>::iterator se_it = _sessions.begin();
-    for(se_it; se_it!=_sessions.end(); se_it++)
+    for(; se_it!=_sessions.end(); se_it++)
     {
-        //se_it->printSession();
+        se_it->printSession();
         file << se_it->outputSession();
     }
 }

@@ -26,6 +26,8 @@ private:
     const struct sniff_ethernet *_ethernet;
     const struct  sniff_ip *_ip;
     const struct sniff_tcp *_tcp;
+    const struct sniff_udp *_udp;
+    const struct sniff_icmp *_icmp;
     const char *_payload;
     void reflashSession(const struct pcap_pkthdr *header, const u_char *packet,
             vector<session>::iterator se_it);

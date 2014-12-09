@@ -156,24 +156,26 @@ void pcapDev()
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
     ethernet = (struct sniff_ethernet*)(packet);
-    if(ethernet->ether_type==0x0800)
+    //check it is IP packet.
+    if(ethernet->ether_type==0x08)
     {
         ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
         size_ip = IP_HL(ip)*4;
-        if (size_ip < 20 || IP_V(ip)==6) {
-            printf("   * Invalid IP header length: %u bytes\n", size_ip);
-            cout << "ip size "<<size_ip <<endl;
-            cout << "version "<<IP_V(ip)<<endl;
+        if (IP_V(ip)==6) {
+            cout << "It is ip version 6." << endl;
             return;
         }
-        mainSession.addPacket(args, header, packet);
+        if(ip->ip_p==0x06||ip->ip_p==0x11||ip->ip_p==0x01)
+        {
+            mainSession.addPacket(args, header, packet);
+        }
         return;
     }
 }
 void old_got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-    ethernet = (class sniff_ethernet*)(packet);
-    ip = (class sniff_ip*)(packet + SIZE_ETHERNET);
+    ethernet = (struct sniff_ethernet*)(packet);
+    ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     //cout << header->ts.tv_usec<<endl;
     size_ip = IP_HL(ip)*4;
     //cout<<"ip size="<<size_ip<<endl;
