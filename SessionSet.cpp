@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "SessionSet.h"
+#include "jaychang.h"
 
 #define SIZE_ETHERNET 14
 
@@ -113,6 +114,9 @@ void SessionSet::addSession(const struct pcap_pkthdr *header, const u_char *pack
         newSession.protocol = "icmp";
         //TODO:add the function to detect features for icmp protocol.
     }
+    //TODO add the function for all protocol.
+    TrafficFeature tf(header,packet,_sessions);
+    cout << tf.countOfSameService() << ' ' << tf.percentageOfSameServiceInSameHost() << endl;
     _sessions.push_back(newSession);
 }
 void SessionSet::labelSession(vector<alert>& alerts)
@@ -144,7 +148,7 @@ void SessionSet::outputSession(string path)
     vector<session>::iterator se_it = _sessions.begin();
     for(; se_it!=_sessions.end(); se_it++)
     {
-        se_it->printSession();
+        //se_it->printSession();
         file << se_it->outputSession();
     }
     cout << "session number is " << _sessions.size() << endl;
