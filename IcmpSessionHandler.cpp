@@ -39,6 +39,9 @@ void IcmpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsig
     _ethernet = (const struct sniff_ethernet*)(packet);
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
     _icmp = (const struct sniff_icmp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+
+    char *_payload = (char *) (packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4 + 8);
+
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
     newSession.port_src = 0;
     newSession.port_dst = 0;
