@@ -14,13 +14,17 @@ using namespace std;
 
 enum tcpStatus
 {
-    SYN1,
-    SYN2,
-    SYN3,
-    EST,
-    END,
-    SYN_ERROR,
-    REJ
+    OTH,
+    REJ,
+    RSTO,
+    RSTOS0,
+    RSTR,
+    S0,
+    S1,
+    S2,
+    S3,
+    SF,
+    SH
 };
 
 struct session
@@ -29,18 +33,41 @@ struct session
     struct timeval end;
     struct in_addr ip_src,ip_dst;
     u_short port_src,port_dst;
-    
 
+    //Basic features
     long dur = 0;
     string  protocol;
     unsigned int p_number = 1;
-    enum tcpStatus status =  SYN1;
-    //TODO: add feature.
+    enum tcpStatus flag =  SF;
 
+    //Content features
 
+    //traffic features
+    //2 sec
+    int count = 0;
+    int srv_count = 0;
+    float serror_rate = 0;
+    float srv_serror_rate = 0;
+    float rerror_rate = 0;
+    float srv_rerror_rate = 0;
+    float same_srv_rate = 0;
+    float diff_srv_rate = 0;
+    float srv_diff_host_rate = 0;
+    //100 connected
+    int dst_host_count = 0;
+    int dst_host_srv_count = 0;
+    float dst_host_same_srv_rate = 0;
+    float dst_host_diff_srv_rate = 0;
+    float dst_host_same_src_port_rate = 0;
+    float dst_host_srv_diff_host_rate = 0;
+    float dst_host_serror_rate = 0;
+    float dst_host_srv_serror_rate = 0;
+    float dst_host_rerror_rate = 0;
+    float dst_host_srv_rerror_rate = 0;
 
-
+    //label
     string label = "normal.";
+
     session(struct timeval time, struct in_addr sip, struct in_addr dip)
     {
         start = end = time;
@@ -56,7 +83,17 @@ struct session
     string outputSession()
     {
         std::stringstream ss;
-        ss << this->end.tv_sec-this->start.tv_sec << ',' << port_src << ',' << port_dst << ',' << protocol << ',' << p_number << ',' << label << '\n';
+        ss << this->end.tv_sec-this->start.tv_sec << ',' << protocol << ',' << port_dst << ',' 
+            << flag << ',' << p_number << ',' 
+            << count << ',' << srv_count << ',' << serror_rate << ',' << srv_serror_rate << ',' 
+            << rerror_rate << ',' << srv_rerror_rate << ',' << same_srv_rate << ',' 
+            << diff_srv_rate << ',' << srv_diff_host_rate << ',' 
+            << dst_host_count << ',' << dst_host_srv_count << ',' << dst_host_same_srv_rate << ',' 
+            << dst_host_diff_srv_rate << ',' << dst_host_same_src_port_rate << ',' 
+            << dst_host_srv_diff_host_rate << ',' << dst_host_serror_rate << ',' 
+            << dst_host_srv_serror_rate << ',' << dst_host_rerror_rate << ',' 
+            << dst_host_srv_rerror_rate << ',' 
+            << label << '\n';
         return ss.str();
     }
 };

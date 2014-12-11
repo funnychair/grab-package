@@ -4,35 +4,10 @@ using namespace std;
 
 IcmpSessionHandler::IcmpSessionHandler(int timeout, vector<session> &sessionV, const struct pcap_pkthdr *header, const unsigned char *packet) : AbstractHandler(timeout, sessionV)
 {
-    _ip = (const struct sniff_ip*)(packet+SIZE_ETHERNET);
-
-    bool newflag = true;
-    for(vector<session>::iterator it = sessionV.begin(); it != sessionV.end(); it++)
-    {
-        if(belongToSession(header,_ip,*it))
-        {
-            newflag = false;
-            reflashSession(header,packet,*it);
-            //cout << "reflash~~~~~~~~~~~~~~~~" << endl;
-            break;
-        }
-    }
-    if(newflag == true)
-    {
         addSession(header,packet);
-        //cout << "add icmp session." << endl;
-    }
-    //cout << _sessions.size();
 }
 IcmpSessionHandler::~IcmpSessionHandler(){}
 
-void IcmpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const unsigned char *packet, session &sess)
-{
-    //cout << "reflashSession.==" << endl;
-    sess.end.tv_sec = header->ts.tv_sec;
-    sess.end.tv_usec = header->ts.tv_usec;
-    sess.p_number++;
-}
 
 void IcmpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsigned char *packet)
 {

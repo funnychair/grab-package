@@ -45,6 +45,10 @@ void SessionSet::addPacket(unsigned char *args, const struct pcap_pkthdr *header
         IcmpSessionHandler handler(_timeout,_sessions,header,packet);
     }
 }
+void SessionSet::setTrafficFeatures()
+{
+    TrafficFeature tf(_sessions);
+}
 void SessionSet::labelSession(vector<alert>& alerts)
 {
     //for all sessions
@@ -74,7 +78,7 @@ void SessionSet::outputSession(string path)
     vector<session>::iterator se_it = _sessions.begin();
     for(; se_it!=_sessions.end(); se_it++)
     {
-        se_it->printSession();
+        //se_it->printSession();
         file << se_it->outputSession();
     }
     cout << "session number is " << _sessions.size() << endl;

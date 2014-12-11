@@ -40,6 +40,9 @@ void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsign
     newSession.port_src = _tcp->th_sport;
     newSession.port_dst = _tcp->th_dport;
     newSession.protocol = "tcp";
+    newSession.flag = S0;
+    
+    
     _sessions.push_back(newSession);
 }
 

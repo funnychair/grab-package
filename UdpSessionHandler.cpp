@@ -4,22 +4,7 @@ using namespace std;
 
 UdpSessionHandler::UdpSessionHandler(int timeout, vector<session> &sessionV, const struct pcap_pkthdr *header, const unsigned char *packet) : AbstractHandler(timeout, sessionV)
 {
-    bool newflag = true;
-    for(vector<session>::iterator it = sessionV.begin(); it != sessionV.end(); it++)
-    {
-        if(belongToSession(header,packet,*it))
-        {
-            newflag = false;
-            reflashSession(header,packet,*it);
-            break;
-        }
-    }
-    if(newflag == true)
-    {
-        addSession(header,packet);
-        //cout << "add udp session." << endl;
-    }
-    //cout << _sessions.size() << endl;
+    addSession(header,packet);
 }
 UdpSessionHandler::~UdpSessionHandler(){}
 
@@ -41,6 +26,7 @@ void UdpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsign
     newSession.protocol = "udp";
     _sessions.push_back(newSession);
 }
+
 
 bool UdpSessionHandler::belongToSession(const struct pcap_pkthdr *header, const unsigned char *packet, session &sess)
 {

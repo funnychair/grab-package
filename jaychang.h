@@ -10,20 +10,15 @@
 class TrafficFeature
 {
 public:
-//it detect when add a new session.
-    TrafficFeature(const struct pcap_pkthdr *header, const u_char *packet, vector<session> &sessionV);
-    int countOfSameHost() {return _count_host;}
-    //float percentageOfSYNerrorInSameHost();
-    //float percentageOfREJerrorInSameHost();
-    float percentageOfSameServiceInSameHost() {return (float)_count_host_srv/(float)_count_host;}
-    float percentageOfDifferentServiceInSameHost() {return ((float)(_count_host-_count_host_srv)/(float)_count_host);}
-    
-    int countOfSameService() {return _count_srv;}
-    //float percentageOfSYNerrorInSameService();
-    //float percentageOfREJerrorInSameService();
-    float percentageOfDifferentHostInSameService() {return ((float)(_count_srv-_count_host_srv)/(float)_count_srv);}
+    TrafficFeature(vector<session> &sessionV);
 private:
-    int _count_host;
-    int _count_host_srv;
-    int _count_srv;
+    int _count_host = 0;
+    int _count_srv = 0;
+    int _count_host_srv = 0;
+    int _count_host_SYN = 0;
+    int _count_host_REJ = 0;
+    int _count_srv_SYN = 0;
+    int _count_srv_REJ = 0;
+    int _count_host_same_src_port = 0;
+    int _count_host_same_srv_diff_src_host = 0;
 };

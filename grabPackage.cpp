@@ -74,8 +74,10 @@ int main(int argc, char *argv[])
     {
         cout << (alertV).at(i).label << endl;
     }
+    mainSession.setTrafficFeatures();
     mainSession.labelSession(alertV);
     mainSession.outputSession(finalDataPath);
+    cout << "======End======" << endl;
     return 0;
 }
 
@@ -172,57 +174,4 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         }
         return;
     }
-}
-void old_got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
-{
-    ethernet = (struct sniff_ethernet*)(packet);
-    ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
-    //cout << header->ts.tv_usec<<endl;
-    size_ip = IP_HL(ip)*4;
-    //cout<<"ip size="<<size_ip<<endl;
-    if (size_ip < 20 || IP_V(ip)==6) {
-        printf("   * Invalid IP header length: %u bytes\n", size_ip);
-        cout << "ip size "<<size_ip <<endl;
-        cout << "version "<<IP_V(ip)<<endl;
-        return;
-    }
-    cout << "From:  " << inet_ntoa(ip->ip_src) << " " << ip->ip_src.s_addr << endl;
-    cout << "To:    " << inet_ntoa(ip->ip_dst) << endl;
-    
-    unsigned int sp = 0;
-    sp += (unsigned int)(ip->ip_src.s_addr&0xFF)<<24;
-    sp += (unsigned int)(ip->ip_src.s_addr&0xFF00)<<8;
-    sp += (unsigned int)(ip->ip_src.s_addr&0xFF0000)>>8;
-    sp += (unsigned int)(ip->ip_src.s_addr&0xFF000000)>>24;
-    unsigned int dp = 0;
-    dp += (unsigned int)(ip->ip_dst.s_addr&0xFF)<<24;
-    dp += (unsigned int)(ip->ip_dst.s_addr&0xFF00)<<8;
-    dp += (unsigned int)(ip->ip_dst.s_addr&0xFF0000)>>8;
-    dp += (unsigned int)(ip->ip_dst.s_addr&0xFF000000)>>24;
-    unsigned short ln = 0;
-    ln += (unsigned short)(ip->ip_len&0xFF)<<8;
-    ln += (unsigned short)(ip->ip_len&0xFF00)>>8;
-    unsigned short of = 0;
-    of += (unsigned short)(ip->ip_off);
-    
-    tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
-    size_tcp = TH_OFF(tcp)*4;
-    
-    unsigned int spo = 0;
-    spo += (unsigned int)(tcp->th_sport&0xFF)<<8;
-    spo += (unsigned int)(tcp->th_sport&0xFF00)>>8;
-    unsigned int dpo = 0;
-    dpo += (unsigned int)(tcp->th_dport&0xFF)<<8;
-    dpo += (unsigned int)(tcp->th_dport&0xFF00)>>8;
-    
-    //if (size_tcp < 20) {
-    //    printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
-    //    return;
-    //}
-    //if (ip->ip_p!=IPPROTO_TCP) cout << "proto "<<(int)ip->ip_p << endl;
-    //cout << (long)inet_aton("181.175.235.117",a) << endl;
-    finalFile <<sp<<","<<dp<<","<<spo<<","<<dpo<<","<<(short)ip->ip_p<<","<<ln<<","<<of<<endl;
-    finalFile<< header->ts.tv_sec << header->ts.tv_usec <<endl;
-    payload = (char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
-    return;
 }

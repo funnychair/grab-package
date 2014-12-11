@@ -17,6 +17,7 @@ public:
     ~SessionSet();
     void addPacket(unsigned char *args, const struct pcap_pkthdr *header, 
             const unsigned char *packet);
+    void setTrafficFeatures();
     void labelSession(vector<alert>& alerts);
     void outputSession(string path);
     
