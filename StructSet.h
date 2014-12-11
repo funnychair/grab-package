@@ -12,17 +12,29 @@
 
 using namespace std;
 
+enum tcpStatus
+{
+    SYN1,
+    SYN2,
+    SYN3,
+    EST,
+    END,
+    SYN_ERROR,
+    REJ
+};
+
 struct session
 {
     struct timeval start;
     struct timeval end;
     struct in_addr ip_src,ip_dst;
     u_short port_src,port_dst;
+    
 
     long dur = 0;
     string  protocol;
     unsigned int p_number = 1;
-    
+    enum tcpStatus status =  SYN1;
     //TODO: add feature.
 
 
@@ -39,7 +51,7 @@ struct session
     {
         cout << "time=" << start.tv_sec << "--" << end.tv_sec;
         cout << " from=" << setw(16) << inet_ntoa(ip_src) << ":" << setw(6) << port_src;
-        cout << " to=" <<setw(16) << inet_ntoa(ip_dst) << ":" << setw(6) << port_dst << endl;
+        cout << " to=" <<setw(16) << inet_ntoa(ip_dst) << ":" << setw(6) << port_dst << "   " << protocol << endl;
     }
     string outputSession()
     {
