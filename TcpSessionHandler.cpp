@@ -1,4 +1,6 @@
 #include "TcpSessionHandler.h"
+#include "chehsunliu.h"
+#include <string.h>
 
 using namespace std;
 
@@ -35,7 +37,33 @@ void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const un
 void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsigned char *packet)
 {
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
-    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + IP_HL(_ip) * 4);
+
+    int ip_header_length = IP_HL(_ip) * 4;
+    int tcp_header_length = TH_OFF(_tcp) * 4;
+
+    u_char *payload = (u_char *) (packet + SIZE_ETHERNET + ip_header_length + tcp_header_length);
+    int payload_size = _ip->ip_len - ip_header_length - tcp_header_length;
+    //payload[payload_size] = '\0';
+
+    printf("\n=================================================================\n");
+    printf("=================================================================\n");
+    printf("============================== TCP ==============================\n");
+    printf("=================================================================\n");
+    printf("=================================================================\n");
+    printf("Packet size:      %8d bytes\n", _ip->ip_len);
+    printf("IP header size:   %8d bytes\n", ((_ip->ip_vhl & 0x0f) * 4));
+    printf("TCP header size:  %8d bytes\n", (TH_OFF(_tcp) * 4));
+    printf("Payload size:     %8d bytes\n", payload_size);
+    printf("\n------------------------- Data BEGIN ------------------------------\n");
+    for (int i = 0; i < payload_size; i++) {
+      printf("%c", payload[i]);
+    }
+    //chehsunliu::print_payload(payload, payload_size);
+    printf("\n");
+    printf("\n-------------------------- Data END -------------------------------\n");
+
+
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
     newSession.port_src = _tcp->th_sport;
     newSession.port_dst = _tcp->th_dport;

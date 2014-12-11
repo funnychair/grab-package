@@ -94,6 +94,8 @@ public:
     u_short ip_sum;     /* checksum */
     struct in_addr ip_src,ip_dst; /* source and dest address */
 };
+#define IP_HL(ip) (((ip)->ip_vhl) & 0x0f)
+#define IP_V(ip)  (((ip)->ip_vhl) >> 4)
 
 typedef u_int tcp_seq;
 

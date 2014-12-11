@@ -35,6 +35,15 @@ void UdpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsign
 {
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
     _udp = (const struct sniff_udp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+
+    char *_payload = (char *) (packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4 + 8);
+
+    printf("\n=================================================================\n");
+    printf("=================================================================\n");
+    printf("============================== UDP ==============================\n");
+    printf("=================================================================\n");
+    printf("=================================================================\n");
+
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
     newSession.port_src = _udp->th_sport;
     newSession.port_dst = _udp->th_dport;

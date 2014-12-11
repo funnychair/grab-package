@@ -42,6 +42,12 @@ void IcmpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsig
 
     char *_payload = (char *) (packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4 + 8);
 
+    printf("\n=================================================================\n");
+    printf("=================================================================\n");
+    printf("============================== ICMP =============================\n");
+    printf("=================================================================\n");
+    printf("=================================================================\n");
+
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
     newSession.port_src = 0;
     newSession.port_dst = 0;
