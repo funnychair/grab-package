@@ -11,20 +11,18 @@
 #define SIZE_ETHERNET 14
 
 using namespace std;
-
 enum tcpStatus
 {
-    OTH,
+    OTH = 0,
     REJ,
     RSTO,
-    RSTOS0,
     RSTR,
     S0,
     S1,
     S2,
     S3,
     SF,
-    SH
+    S11
 };
 
 struct session
@@ -38,6 +36,8 @@ struct session
     long dur = 0;
     string  protocol;
     unsigned int p_number = 1;
+    unsigned int src_bytes = 0;
+    unsigned int dst_bytes = 0;
     enum tcpStatus flag =  SF;
 
     //Content features
@@ -67,7 +67,7 @@ struct session
 
     //label
     string label = "normal.";
-
+    string enumType[11] = {"OTH","REJ","RSTO","RSTR","S0","S1","S2","S3","SF","S11"};
     session(struct timeval time, struct in_addr sip, struct in_addr dip)
     {
         start = end = time;
@@ -84,7 +84,7 @@ struct session
     {
         std::stringstream ss;
         ss << this->end.tv_sec-this->start.tv_sec << ',' << protocol << ',' << port_dst << ',' 
-            << flag << ',' << p_number << ',' 
+            << enumType[flag] << ',' << src_bytes << ',' << dst_bytes << ',' 
             << count << ',' << srv_count << ',' << serror_rate << ',' << srv_serror_rate << ',' 
             << rerror_rate << ',' << srv_rerror_rate << ',' << same_srv_rate << ',' 
             << diff_srv_rate << ',' << srv_diff_host_rate << ',' 

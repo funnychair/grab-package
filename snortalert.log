@@ -1,0 +1,1 @@
+12/27-22:54:11.247815  [**] [1:31289:3] SERVER-WEBAPP /etc/passwd file access attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 140.110.123.9:80 -> 140.112.33.250:43346

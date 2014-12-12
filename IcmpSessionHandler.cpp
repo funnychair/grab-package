@@ -18,6 +18,7 @@ void IcmpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsig
     newSession.port_src = 0;
     newSession.port_dst = 0;
     newSession.protocol = "icmp";
+    newSession.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - 8;
     _sessions.push_back(newSession);
 }
 

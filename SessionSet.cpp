@@ -54,7 +54,7 @@ void SessionSet::labelSession(vector<alert>& alerts)
     //for all sessions
     for(unsigned long sessionIndex=0; sessionIndex<_sessions.size(); sessionIndex++)
     {
-        //if(alerts.empty())break;
+        if(alerts.empty())break;
         //for all alert.
         for(unsigned long alertIndex=0; alertIndex<alerts.size(); alertIndex++)
         {
@@ -82,4 +82,14 @@ void SessionSet::outputSession(string path)
         file << se_it->outputSession();
     }
     cout << "session number is " << _sessions.size() << endl;
+}
+bool alertInSession(const struct alert &al, const struct session &se)
+{
+    if(al.arrival.tv_sec > se.start.tv_sec && al.arrival.tv_sec < se.end.tv_sec) return true;
+    else if(se.end.tv_sec < al.arrival.tv_sec);
+    else 
+    {
+        if(se.end.tv_usec >= al.arrival.tv_usec);
+        else if(se.end.tv_usec < al.arrival.tv_usec);
+    }
 }

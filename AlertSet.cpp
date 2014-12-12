@@ -5,6 +5,7 @@
 #include <vector>
 #include <pcap.h>
 #include <time.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "AlertSet.h"
@@ -52,20 +53,42 @@ void AlertSet::snortResolve(ifstream &file)
         ss << alertContent.substr(12,2);
         ss >> time.tm_sec;
         ss.clear();
+        tmp.arrival.tv_sec = mktime(&time);
+        
+        //
         ss << alertContent.substr(15,7);
         ss >> tmp.arrival.tv_usec;
         ss.clear();
         //cout << time.tm_mon << " " << time.tm_mday << " " << time.tm_hour << " " << time.tm_min << " " << time.tm_sec << endl;
-        cout << mktime(&time); 
-        tmp.arrival.tv_sec = mktime(&time);
-        //set alert IP and PORT.
-        //tmp test
-        tmp.ip_scr.s_addr = 402761920;
-        tmp.ip_dst.s_addr = 2973889852;
-        tmp.port_src = 5632;
-        tmp.port_dst = 26804;
+
+        int startClassification = alertContent.find( "[Classification:" ) + 16;
+        cout << startClassification << endl;
+        int endClassification = alertContent.find_first_of( "]", startClassification);
         //set alert label.
-        tmp.label = alertContent;
+        tmp.label = alertContent.substr( startClassification, (endClassification-startClassification));
+        cout << tmp.label << endl;
+        
+        //set alert IP and PORT.
+        int sIpStart = alertContent.find_first_of( "}", endClassification)+1;
+        int sPortStart = alertContent.find_first_of( ":", sIpStart);
+        int sPortEnd = alertContent.find_first_of( " ", sPortStart);
+        int dIpStart = alertContent.find_first_of( " ", sPortEnd+1);
+        int dPortStart = alertContent.find_first_of( ":", dIpStart);
+        
+        string a = alertContent.substr(sIpStart+1,(sPortStart-sIpStart-1));
+        int k = inet_aton(a.c_str(), &(tmp.ip_scr));
+        
+        ss << alertContent.substr(sPortStart+1,(sPortEnd-sPortStart-1));
+        ss >> tmp.port_src;
+        ss.clear();
+        
+        a = alertContent.substr(dIpStart+1,(dPortStart-dIpStart-1));
+        k = inet_aton(a.c_str(), &(tmp.ip_dst));
+        
+        ss << alertContent.substr(dPortStart+1);
+        ss >> tmp.port_dst;
+        ss.clear();
+        
         _alert.push_back(tmp);
         getline(file, alertContent);
     }

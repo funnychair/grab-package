@@ -4,21 +4,23 @@ using namespace std;
 
 TcpSessionHandler::TcpSessionHandler(int timeout, vector<session> &sessionV, const struct pcap_pkthdr *header, const unsigned char *packet) : AbstractHandler(timeout, sessionV)
 {
-    bool newflag = true;
-    for(vector<session>::iterator it = sessionV.begin(); it != sessionV.end(); it++)
-    {
-        if(belongToSession(header,packet,*it))
-        {
-            newflag = false;
-            reflashSession(header,packet,*it);
-            //cout << "reflash~~~~~~~~~~~~~~~~" << endl;
-            break;
-        }
-    }
-    if(newflag == true)
+    _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl&0x0f)*4);
+    if((short)(_tcp->th_flags)==2)
     {
         addSession(header,packet);
-        //cout << "add tcp session." << endl;
+    }
+    else
+    {
+        for(vector<session>::iterator it = sessionV.begin(); it != sessionV.end(); it++)
+        {
+            if(belongToSession(header,packet,*it))
+            {
+                reflashSession(header,packet,*it);
+                //cout << "reflash~~~~~~~~~~~~~~~~" << endl;
+                break;
+            }
+        }
     }
     //cout << _sessions.size() << endl;
 }
@@ -26,10 +28,28 @@ TcpSessionHandler::~TcpSessionHandler(){}
 
 void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const unsigned char *packet, session &sess)
 {
+    _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
     //cout << "reflashSession.==" << endl;
     sess.end.tv_sec = header->ts.tv_sec;
     sess.end.tv_usec = header->ts.tv_usec;
     sess.p_number++;
+    if(_ip->ip_src.s_addr==sess.ip_src.s_addr)
+    {
+        sess.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+    }
+    else
+    {
+        sess.dst_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+    }
+    if(((_tcp->th_flags&0x4)==0x4)&&(_ip->ip_src.s_addr==sess.ip_src.s_addr)) sess.flag=RSTO;
+    else if(((_tcp->th_flags&0x4)==0x4)&&(_ip->ip_src.s_addr==sess.ip_dst.s_addr)) sess.flag=RSTR;
+    else if((sess.flag==S0)&&((_tcp->th_flags&0x12)==0x12)) sess.flag=S1;
+    else if((sess.flag==S0)&&((_tcp->th_flags&0x4)==0x4)) sess.flag=REJ;
+    else if((sess.flag==S1)&&((_tcp->th_flags&0x1)==0x1)&&(_ip->ip_src.s_addr==sess.ip_src.s_addr)) sess.flag=S2;
+    else if((sess.flag==S1)&&((_tcp->th_flags&0x1)==0x1)&&(_ip->ip_src.s_addr==sess.ip_dst.s_addr)) sess.flag=S3;
+    else if(sess.flag==S1) sess.flag=S11;
+    else if(sess.flag==S11&&(_tcp->th_flags&0x1)==0x1) sess.flag=SF;
 }
 
 void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsigned char *packet)
@@ -41,6 +61,8 @@ void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsign
     newSession.port_dst = _tcp->th_dport;
     newSession.protocol = "tcp";
     newSession.flag = S0;
+    newSession.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+
     
     
     _sessions.push_back(newSession);
