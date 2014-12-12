@@ -30,7 +30,7 @@ TrafficFeature::TrafficFeature(vector<session> &sessionV)
         it--;
         for(; it!=sessionV.begin(); it--)
         {
-            if(inSec(*itFirst,*it,100))
+            if(inSec(*itFirst,*it,2))
             //if(true)
             {
                 if(isSameHost(*itFirst,*it))

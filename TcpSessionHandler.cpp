@@ -34,14 +34,17 @@ void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const un
     sess.end.tv_sec = header->ts.tv_sec;
     sess.end.tv_usec = header->ts.tv_usec;
     sess.p_number++;
+    //src_bytes
     if(_ip->ip_src.s_addr==sess.ip_src.s_addr)
     {
         sess.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
     }
+    //dst_bytes
     else
     {
         sess.dst_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
     }
+    //flags status
     if(((_tcp->th_flags&0x4)==0x4)&&(_ip->ip_src.s_addr==sess.ip_src.s_addr)) sess.flag=RSTO;
     else if(((_tcp->th_flags&0x4)==0x4)&&(_ip->ip_src.s_addr==sess.ip_dst.s_addr)) sess.flag=RSTR;
     else if((sess.flag==S0)&&((_tcp->th_flags&0x12)==0x12)) sess.flag=S1;
