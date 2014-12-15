@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     vector<alert> alertV = snortAlert.getAlert();
     for(int i=0; i<alertV.size(); i++)
     {
-        cout << (alertV).at(i).label << endl;
+        //cout << (alertV).at(i).label << endl;
     }
     mainSession.setTrafficFeatures();
     mainSession.labelSession(alertV);

@@ -58,10 +58,10 @@ void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const un
 void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsigned char *packet)
 {
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
-    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0xf)*4);
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
-    newSession.port_src = _tcp->th_sport;
-    newSession.port_dst = _tcp->th_dport;
+    newSession.port_src = PORT_TRA(_tcp->th_sport);
+    newSession.port_dst = PORT_TRA(_tcp->th_dport);
     newSession.protocol = "tcp";
     newSession.flag = S0;
     newSession.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
@@ -80,22 +80,22 @@ bool TcpSessionHandler::belongToSession(const struct pcap_pkthdr *header, const 
     {
         if(_ip->ip_src.s_addr==sess.ip_src.s_addr && _ip->ip_dst.s_addr==sess.ip_dst.s_addr)
         {
-            if(_tcp->th_sport==sess.port_src && _tcp->th_dport==sess.port_dst) return true;
+            if(PORT_TRA(_tcp->th_sport)==sess.port_src && PORT_TRA(_tcp->th_dport)==sess.port_dst) return true;
         }
         else if(_ip->ip_src.s_addr==sess.ip_dst.s_addr && _ip->ip_dst.s_addr==sess.ip_src.s_addr)
         {
-            if(_tcp->th_sport==sess.port_dst && _tcp->th_dport==sess.port_src) return true;
+            if(PORT_TRA(_tcp->th_sport)==sess.port_dst && PORT_TRA(_tcp->th_dport)==sess.port_src) return true;
         }
     }
     else if(header->ts.tv_sec==sess.start.tv_sec && header->ts.tv_usec > sess.end.tv_usec)
     {
         if(_ip->ip_src.s_addr==sess.ip_src.s_addr && _ip->ip_dst.s_addr==sess.ip_dst.s_addr)
         {
-            if(_tcp->th_sport==sess.port_src && _tcp->th_dport==sess.port_dst) return true;
+            if(PORT_TRA(_tcp->th_sport)==sess.port_src && PORT_TRA(_tcp->th_dport)==sess.port_dst) return true;
         }
         else if(_ip->ip_src.s_addr==sess.ip_dst.s_addr && _ip->ip_dst.s_addr==sess.ip_src.s_addr)
         {
-            if(_tcp->th_sport==sess.port_dst && _tcp->th_dport==sess.port_src) return true;
+            if(PORT_TRA(_tcp->th_sport)==sess.port_dst && PORT_TRA(_tcp->th_dport)==sess.port_src) return true;
         }
     }
     return false;

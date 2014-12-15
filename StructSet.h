@@ -104,6 +104,12 @@ struct alert
     struct in_addr ip_scr,ip_dst;
     u_short port_src, port_dst;
     string label;
+    void printA()
+    {
+        cout << inet_ntoa(ip_scr) << ':' << port_src << "->";
+        cout << inet_ntoa(ip_dst) << ':' << port_dst << endl;
+        cout << label << endl;
+    }
 };
 
 struct sniff_ethernet
@@ -142,6 +148,7 @@ public:
     tcp_seq th_seq;     /* sequence number */
     tcp_seq th_ack;     /* acknowledgement number */
     u_char th_offx2;    /* data offset, rsvd */
+#define PORT_TRA(sh_port) (((sh_port & 0xff) << 8) | (sh_port & 0xff00) >> 8)
 #define TH_OFF(th)  (((th)->th_offx2 & 0xf0) >> 4)
     u_char th_flags;
 #define TH_FIN 0x01

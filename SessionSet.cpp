@@ -20,6 +20,7 @@ using namespace std;
 bool tcpBelongToSession(const unsigned char *packet, vector<session> &sess);
 bool udpBelongToSession(const unsigned char *packet, vector<session> &sess);
 bool icmpBelongToSession(const unsigned char *packet, vector<session> &sess);
+bool alertInSession(const struct alert &al, const struct session &se);
 
 SessionSet::SessionSet(int timeout)
 {
@@ -51,23 +52,21 @@ void SessionSet::setTrafficFeatures()
 }
 void SessionSet::labelSession(vector<alert>& alerts)
 {
-    //for all sessions
-    for(unsigned long sessionIndex=0; sessionIndex<_sessions.size(); sessionIndex++)
+    //for all alert.
+    for(unsigned int alertIndex=0; alertIndex<alerts.size(); alertIndex++)
     {
-        if(alerts.empty())break;
-        //for all alert.
-        for(unsigned long alertIndex=0; alertIndex<alerts.size(); alertIndex++)
+       // alerts[alertIndex].printA();
+        for(unsigned int sessionIndex=0; sessionIndex<_sessions.size(); sessionIndex++)
         {
-            if(_sessions[sessionIndex].end.tv_sec>alerts[alertIndex].arrival.tv_sec);
-            else if(_sessions[sessionIndex].end.tv_sec < alerts[alertIndex].arrival.tv_sec)break;
-            else 
+            if(alertInSession(alerts[alertIndex],_sessions[sessionIndex]))
             {
-                if(_sessions[sessionIndex].end.tv_usec >= alerts[alertIndex].arrival.tv_usec);
-                else if(_sessions[sessionIndex].end.tv_usec < alerts[alertIndex].arrival.tv_usec)break;
+                alerts[alertIndex].printA();
+                _sessions[sessionIndex].printSession();
+                _sessions[sessionIndex].label = alerts[alertIndex].label;
+                alerts.erase(alerts.begin()+alertIndex);
+                //cout << alerts[alertIndex].label << endl;
+                break;
             }
-            _sessions[sessionIndex].label = alerts[alertIndex].label;
-            alerts.erase(alerts.begin()+alertIndex);
-            //cout << alerts[alertIndex].label << endl;
         }
     }
 }
@@ -85,11 +84,42 @@ void SessionSet::outputSession(string path)
 }
 bool alertInSession(const struct alert &al, const struct session &se)
 {
-    if(al.arrival.tv_sec > se.start.tv_sec && al.arrival.tv_sec < se.end.tv_sec) return true;
-    else if(se.end.tv_sec < al.arrival.tv_sec);
-    else 
+    //cout << al.arrival.tv_sec << " & " << se.start.tv_sec << endl;
+    if(al.arrival.tv_sec < se.start.tv_sec || al.arrival.tv_sec > se.end.tv_sec)
     {
-        if(se.end.tv_usec >= al.arrival.tv_usec);
-        else if(se.end.tv_usec < al.arrival.tv_usec);
+        return false;
     }
+    if(al.arrival.tv_sec == se.start.tv_sec && al.arrival.tv_usec >= se.start.tv_usec)
+    {
+        //cout << "XX" << endl;
+        if(al.ip_scr.s_addr==se.ip_src.s_addr && al.port_src==se.port_src &&
+                al.ip_dst.s_addr==se.ip_dst.s_addr && al.port_dst==se.port_dst)
+        {
+            //cout << "XX" << endl;
+            return true;
+        }
+        else if(al.ip_scr.s_addr==se.ip_dst.s_addr && al.port_src==se.port_dst &&
+                al.ip_dst.s_addr==se.ip_src.s_addr && al.port_dst==se.port_src)
+        {
+            //cout << "XX" << endl;
+            return true;
+        }
+        else return false;
+    }
+    else if (al.arrival.tv_usec <= se.end.tv_usec)
+    {
+        if(al.ip_scr.s_addr==se.ip_src.s_addr && al.port_src==se.port_src &&
+                al.ip_dst.s_addr==se.ip_dst.s_addr && al.port_dst==se.port_dst) return true;
+        else if(al.ip_scr.s_addr==se.ip_dst.s_addr && al.port_src==se.port_dst &&
+                al.ip_dst.s_addr==se.ip_src.s_addr && al.port_dst==se.port_src) return true;
+        else return false;
+    }
+    else
+    {
+        if(al.ip_scr.s_addr==se.ip_src.s_addr && al.port_src==se.port_src &&
+                al.ip_dst.s_addr==se.ip_dst.s_addr && al.port_dst==se.port_dst) return true;
+        else if(al.ip_scr.s_addr==se.ip_dst.s_addr && al.port_src==se.port_dst &&
+                al.ip_dst.s_addr==se.ip_src.s_addr && al.port_dst==se.port_src) return true;
+        else return false;
+    };
 }
