@@ -35,9 +35,12 @@ struct session
     //Basic features
     long dur = 0;
     string  protocol;
+    string service = "other";
     unsigned int p_number = 1;
     unsigned int src_bytes = 0;
     unsigned int dst_bytes = 0;
+    unsigned int  urgent = 0;
+    unsigned int wrong_fragment = 0;
     enum tcpStatus flag =  SF;
 
     //Content features
@@ -83,8 +86,8 @@ struct session
     string outputSession()
     {
         std::stringstream ss;
-        ss << this->end.tv_sec-this->start.tv_sec << ',' << protocol << ',' << port_dst << ',' 
-            << enumType[flag] << ',' << src_bytes << ',' << dst_bytes << ',' 
+        ss << this->end.tv_sec-this->start.tv_sec << ',' << protocol << ',' << service << ',' 
+            << urgent << ',' << wrong_fragment << ',' << enumType[flag] << ',' << src_bytes << ',' << dst_bytes << ',' 
             << count << ',' << srv_count << ',' << serror_rate << ',' << srv_serror_rate << ',' 
             << rerror_rate << ',' << srv_rerror_rate << ',' << same_srv_rate << ',' 
             << diff_srv_rate << ',' << srv_diff_host_rate << ',' 
@@ -111,7 +114,7 @@ struct alert
         cout << label << endl;
     }
 };
-
+#define INT_TRA(I) ((I&0xff)<<24 | (I&0xff00)<<8 | (I&0xff0000)>>8 | (I&0xff000000)>>24)
 struct sniff_ethernet
 {
 public:

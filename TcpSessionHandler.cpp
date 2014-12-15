@@ -1,4 +1,5 @@
 #include "TcpSessionHandler.h"
+#include "poting.h"
 
 using namespace std;
 
@@ -28,21 +29,23 @@ TcpSessionHandler::~TcpSessionHandler(){}
 
 void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const unsigned char *packet, session &sess)
 {
+    BasicFeature B;
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
     _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
     //cout << "reflashSession.==" << endl;
     sess.end.tv_sec = header->ts.tv_sec;
     sess.end.tv_usec = header->ts.tv_usec;
     sess.p_number++;
+    if (B.isurgent(packet)) sess.urgent++;
     //src_bytes
     if(_ip->ip_src.s_addr==sess.ip_src.s_addr)
     {
-        sess.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+        sess.src_bytes += (header->len) - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - TH_OFF(_tcp);
     }
     //dst_bytes
     else
     {
-        sess.dst_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+        sess.dst_bytes += (header->len) - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - TH_OFF(_tcp);
     }
     //flags status
     if(((_tcp->th_flags&0x4)==0x4)&&(_ip->ip_src.s_addr==sess.ip_src.s_addr)) sess.flag=RSTO;
@@ -57,14 +60,17 @@ void TcpSessionHandler::reflashSession(const struct pcap_pkthdr *header,const un
 
 void TcpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsigned char *packet)
 {
+    BasicFeature B;
     _ip = (const struct sniff_ip*)(packet + SIZE_ETHERNET);
-    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0xf)*4);
+    _tcp = (const struct sniff_tcp*)(packet + SIZE_ETHERNET + (_ip->ip_vhl & 0x0f)*4);
     struct session newSession = {header->ts, _ip->ip_src, _ip->ip_dst};
     newSession.port_src = PORT_TRA(_tcp->th_sport);
     newSession.port_dst = PORT_TRA(_tcp->th_dport);
     newSession.protocol = "tcp";
     newSession.flag = S0;
-    newSession.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - _tcp->th_offx2*4;
+    newSession.service = B.service(packet);
+    newSession.src_bytes += (header->len) - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - TH_OFF(_tcp);
+    //cout << header->len << ' ' << (_ip->ip_vhl & 0xf)*4 << ' ' << SIZE_ETHERNET << ' ' << TH_OFF(_tcp) << '=' << newSession.src_bytes << endl;
 
     
     

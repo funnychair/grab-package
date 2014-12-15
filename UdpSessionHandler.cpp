@@ -24,7 +24,7 @@ void UdpSessionHandler::addSession(const struct pcap_pkthdr *header,const unsign
     newSession.port_src = PORT_TRA(_udp->th_sport);
     newSession.port_dst = PORT_TRA(_udp->th_dport);
     newSession.protocol = "udp";
-    newSession.src_bytes += header->len - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - 8;
+    newSession.src_bytes += (header->len) - (_ip->ip_vhl & 0x0f)*4 - SIZE_ETHERNET - 8;
     _sessions.push_back(newSession);
 }
 
